@@ -86,3 +86,30 @@ If everything is successful - you will see the PetClinic application on `$APP_VM
 	* Use ansible to start the new container using systemd service (make sure it is connected to the same docker network as the database)
 	* check if the application is running
 
+# Kv-037.DevOps Project Demo IV
+## Use Kubernetes to Deploy Spring PetClinic Sample Application
+
+- Setup Kubernetes Cluster
+	* Use [kops](https://github.com/kubernetes/kops/blob/master/docs/aws.md) to setup a Kubernetes Cluster on AWS
+	* Install **kubectl**
+	* Install and configure Dashboard Addon for Kubernetes
+- Setup Database Service
+	* Create Database name, login and password *Secrets* and deploy them to cluster
+	* Create a *Persistent Volume Claim* for Database
+	* Create Database *Deployment* and *Service* with ClusterIP
+		* Use secrets to pass environment variables inside containers
+- Setup Application Service
+	* Create application *Deployment* and *Service* with ClusterIP
+		* Use secrets to pass environment variables inside containers
+- Setup Ingress for application
+	* Create default backend for Ingress
+	* Create Ingress Controller
+	* Describe Ingress with LoadBalancer type to access our application
+	* *Optional* Setup SSl Certificate for Nginx yourself
+- Add Monitoring for Kubernetes
+	* Use either [Datadog](https://www.datadoghq.com/) or Prometheus addon
+- Setup Jenkins
+	* Create jenkins file credentials with kubectl config
+	* Modify pipeline to build and push docker image with application to deploy new version to cluster using **kubectl apply ...**
+		* Use the file secret to pass config file for kubectl
+	* *Optional* Configure Blue/Green Deployment for application [example](https://github.com/IanLewis/kubernetes-bluegreen-deployment-tutorial)
