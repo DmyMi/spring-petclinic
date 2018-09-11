@@ -8,7 +8,7 @@ pipeline {
 
     tools {
         maven "Maven 3.5.3"
-      }
+    }
 
     parameters {
         string(name: 'MAVEN_OPTS', defaultValue: '-Djava.awt.headless=true', description: 'Options for Maven')
@@ -35,13 +35,21 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                parallel(deploy: {
-                    echo 'Deploying...'
-                },
-                archive: {
-                    archive 'target/*.jar'
-                })
+                parallel(
+                    deployQA: {
+                        echo 'Deploying QA'
+                    },
+                    deployProd: {
+                        echo 'Deploying Prod'
+                    }
+                )
             }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'target/*.jar'
         }
     }
 }
