@@ -51,16 +51,18 @@ spec:
         }
         stage('Deploy') {
             steps {
-                container('maven') {
                     parallel(
                         deployQA: {
+                            container('maven') {
                             echo 'Deploying QA'
+                            }
                         },
                         deployProd: {
+                            container('maven') {
                             echo 'Deploying Prod'
+                            }
                         }
                     )
-                }
             }
         }
     }
