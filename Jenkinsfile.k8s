@@ -1,0 +1,73 @@
+#!groovy
+
+pipeline {
+
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    some-label: some-label-value
+spec:
+  serviceAccount: my-release-jenkins-agent
+  containers:
+  - name: maven
+    image: maven:3.6.3-slim
+    command:
+    - cat
+    tty: true
+"""
+        }
+    }
+
+    parameters {
+        string(name: 'MAVEN_OPTS', defaultValue: '-Djava.awt.headless=true', description: 'Options for Maven')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build') {
+            steps {
+                container('maven') {
+                    echo 'Compiling Project...'
+                    sh "mvn -B dependency:resolve ${params.MAVEN_OPTS}"
+                    sh "mvn clean compile -B ${params.MAVEN_OPTS}"
+                }
+            }
+        }
+        stage('Test and Package') {
+            steps {
+                container('maven') {
+                    echo 'Testing and Packaging Project..'
+                    sh "mvn package -B ${params.MAVEN_OPTS}"
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                container('maven') {
+                    parallel(
+                        deployQA: {
+                            echo 'Deploying QA'
+                        },
+                        deployProd: {
+                            echo 'Deploying Prod'
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'target/*.jar'
+        }
+    }
+}
