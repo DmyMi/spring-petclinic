@@ -14,7 +14,7 @@ spec:
   serviceAccount: my-release-jenkins-agent
   containers:
   - name: maven
-    image: maven:3.6.3-slim
+    image: adoptopenjdk/maven-openjdk8
     command:
     - cat
     tty: true
